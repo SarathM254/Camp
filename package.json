@@ -1,0 +1,9 @@
+{
+  "name": "proto-campus-platform",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Proto Campus News Platform - React & Express Stack",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build"
+  }
+}
