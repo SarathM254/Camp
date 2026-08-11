@@ -41,20 +41,24 @@ export const BottomNav = ({ onAddClick }) => {
             }`
           }
         >
-          {user?.isSuperAdmin ? (
-            <div className="relative">
-              <img src="/campuz.png" alt="Super Admin" className="w-6 h-6 rounded-md bg-black p-0.5 object-contain shadow-sm" />
-            </div>
-          ) : user?.avatarSeed ? (
-            <img 
-              src={`https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${user.avatarSeed}`} 
-              alt="Avatar" 
-              className={`w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border ${isActive ? 'border-indigo-600 dark:border-indigo-400' : 'border-transparent'}`} 
-            />
-          ) : (
-            <User className="w-6 h-6" />
+          {({ isActive }) => (
+            <>
+              {user?.isSuperAdmin ? (
+                <div className="relative">
+                  <img src="/campuz.png" alt="Super Admin" className="w-6 h-6 rounded-md bg-black p-0.5 object-contain shadow-sm" />
+                </div>
+              ) : user?.avatarSeed ? (
+                <img 
+                  src={`https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${user.avatarSeed}`} 
+                  alt="Avatar" 
+                  className={`w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border ${isActive ? 'border-indigo-600 dark:border-indigo-400' : 'border-transparent'}`} 
+                />
+              ) : (
+                <User className="w-6 h-6" />
+              )}
+              <span className="text-[10px] font-medium">Profile</span>
+            </>
           )}
-          <span className="text-[10px] font-medium">Profile</span>
         </NavLink>
       </div>
     </nav>
