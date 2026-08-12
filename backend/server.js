@@ -32,6 +32,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Root endpoint for browser testing
+app.get('/', (req, res) => {
+  res.send('Campuzway API is running smoothly.');
+});
+
 // Direct health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'API is running' });
