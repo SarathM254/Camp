@@ -79,8 +79,9 @@ export const Profile = () => {
         {isEditMode ? (
           <div className="space-y-6">
             <div>
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Name</label>
+              <label htmlFor="editName" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Name</label>
               <input 
+                id="editName"
                 type="text" 
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}

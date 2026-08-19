@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ArticleCard from '../components/features/ArticleCard';
+import ArticleCardSkeleton from '../components/features/ArticleCardSkeleton';
 
 const CATEGORIES = ['All', 'Campus', 'Sports', 'Events', 'Opinion'];
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -35,13 +36,11 @@ export const Home = () => {
     fetchArticles();
   }, []);
 
-  if (authLoading) {
-    return <div className="flex h-screen items-center justify-center dark:bg-[#0f0f0f]"></div>;
-  }
-
-  if (!user) {
+  if (!authLoading && !user) {
     return <Navigate to="/login" replace />;
   }
+
+  const isLoading = authLoading || loading;
 
   const filteredArticles = selectedCategory === 'All'
     ? articles
@@ -70,10 +69,10 @@ export const Home = () => {
 
       {/* Articles Feed - Constrained Width */}
       <div className="max-w-7xl mx-auto w-full px-0 sm:px-6 lg:px-8">
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-6 p-0 sm:p-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-64 sm:rounded-xl bg-slate-200 dark:bg-[#252525] animate-pulse" />
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-6 pb-20 sm:pb-0">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <ArticleCardSkeleton key={i} />
             ))}
           </div>
         ) : error ? (

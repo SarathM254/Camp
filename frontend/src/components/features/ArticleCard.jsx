@@ -43,7 +43,7 @@ export const ArticleCard = ({ article }) => {
         
         {/* Action Bar / Meta Header */}
         <div className="flex justify-between items-center w-full mb-4 shrink-0">
-          <button className="text-slate-400 hover:text-yellow-400 transition" title="Save Article">
+          <button aria-label="Save Article" className="text-slate-400 hover:text-yellow-400 transition" title="Save Article">
             <Star className="w-5 h-5" />
           </button>
           
@@ -56,6 +56,7 @@ export const ArticleCard = ({ article }) => {
           <div className="relative">
             <button
               onClick={handleShare}
+              aria-label="Share Article"
               className="text-slate-400 hover:text-white transition"
               title="Share Article"
             >
@@ -80,7 +81,7 @@ export const ArticleCard = ({ article }) => {
         </div>
 
         <div className="mt-auto pt-4 border-t border-slate-100 dark:border-[#333] shrink-0 flex justify-between items-center">
-          <a href="#" className="text-yellow-500 hover:text-yellow-400 text-sm font-medium hover:underline transition">
+          <a href="#" aria-label={`View profile of ${author_name || 'Anonymous'}`} rel="noopener noreferrer" className="text-yellow-500 hover:text-yellow-400 text-sm font-medium hover:underline transition">
             @{author_name || 'Anonymous'}
           </a>
           <span className="text-xs text-slate-400">{formattedDate}</span>
