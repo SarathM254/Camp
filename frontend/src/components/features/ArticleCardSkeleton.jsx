@@ -2,7 +2,7 @@ import React from 'react';
 
 export const ArticleCardSkeleton = () => {
   return (
-    <div className="relative flex flex-col bg-white dark:bg-[#1a1a1a] sm:rounded-xl shadow-sm sm:border border-b sm:border-slate-100 border-slate-200 dark:border-[#333] sm:overflow-hidden sm:h-auto h-[calc(100dvh-126px)] min-h-[calc(100dvh-126px)] snap-start snap-always animate-pulse">
+    <div className="relative flex flex-col bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm border border-slate-200 dark:border-[#333] overflow-hidden animate-pulse">
       
       {/* Image Skeleton */}
       <div className="relative w-full aspect-[15/11] sm:h-48 shrink-0 bg-slate-200 dark:bg-[#2a2a2a]" />

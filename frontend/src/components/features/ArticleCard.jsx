@@ -25,7 +25,7 @@ export const ArticleCard = ({ article }) => {
   };
 
   return (
-    <div className="relative flex flex-col bg-white dark:bg-[#1a1a1a] sm:rounded-xl shadow-sm sm:border border-b sm:border-slate-100 border-slate-200 dark:border-[#333] sm:overflow-hidden hover:shadow-md transition-shadow sm:h-auto h-[calc(100dvh-126px)] min-h-[calc(100dvh-126px)] snap-start snap-always">
+    <div className="relative flex flex-col bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm border border-slate-200 dark:border-[#333] overflow-hidden hover:shadow-md transition-shadow">
       {/* Image & Category Tag Header */}
       {image_path && (
         <div className="relative w-full aspect-[15/11] sm:h-48 shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-700">
@@ -76,7 +76,7 @@ export const ArticleCard = ({ article }) => {
           {title}
         </h3>
 
-        <div className="text-slate-600 dark:text-[#a0a0a0] text-sm sm:text-base line-clamp-3 sm:line-clamp-none leading-relaxed mb-6 break-words grow">
+        <div className="text-slate-600 dark:text-[#a0a0a0] text-sm sm:text-base line-clamp-4 leading-relaxed mb-6 break-words grow">
           {body ? body.replace(/<[^>]+>/g, '').trim() || 'No description provided.' : 'No description provided.'}
         </div>
 

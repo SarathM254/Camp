@@ -68,26 +68,26 @@ export const Home = () => {
       </div>
 
       {/* Articles Feed - Constrained Width */}
-      <div className="max-w-7xl mx-auto w-full px-0 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-6 pb-20 sm:pb-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20 sm:pb-0">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <ArticleCardSkeleton key={i} />
             ))}
           </div>
         ) : error ? (
-          <div className="p-8 text-center bg-white dark:bg-[#252525] sm:rounded-2xl border-y sm:border border-slate-200 dark:border-[#333]">
+          <div className="p-8 text-center bg-white dark:bg-[#252525] rounded-2xl border border-slate-200 dark:border-[#333]">
             <p className="text-slate-600 dark:text-slate-400">{error}</p>
           </div>
         ) : filteredArticles.length === 0 ? (
-          <div className="p-12 text-center bg-white dark:bg-[#252525] sm:rounded-2xl border-y sm:border border-slate-200 dark:border-[#333] space-y-2">
+          <div className="p-12 text-center bg-white dark:bg-[#252525] rounded-2xl border border-slate-200 dark:border-[#333] space-y-2">
             <h3 className="text-xl font-bold text-slate-800 dark:text-white">No articles found</h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
               Be the first to post an article in the {selectedCategory} category!
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 sm:gap-6 pb-20 sm:pb-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20 sm:pb-0">
             {filteredArticles.map((article) => (
               <ArticleCard key={article._id || article.id} article={article} />
             ))}
