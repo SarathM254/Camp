@@ -19,9 +19,10 @@ export const Home = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get(`${API_URL}/categories`);
-        if (res.data && res.data.categories) {
-          setCategories([{ name: 'All' }, ...res.data.categories]);
+        const res = await fetch(`${API_URL}/categories?t=${Date.now()}`);
+        const data = await res.json();
+        if (data && data.categories) {
+          setCategories([{ name: 'All' }, ...data.categories]);
         }
       } catch (err) {
         console.error('Error loading categories:', err);

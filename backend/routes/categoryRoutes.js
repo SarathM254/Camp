@@ -9,9 +9,6 @@ router.get('/', async (req, res) => {
   try {
     const categories = await Category.find({ isActive: true }).sort({ order: 1 });
     
-    // Add edge caching headers
-    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
-    
     res.json({ success: true, categories });
   } catch (error) {
     console.error('Error fetching categories:', error);

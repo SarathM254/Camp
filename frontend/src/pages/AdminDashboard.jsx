@@ -19,6 +19,7 @@ export const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [previewArticle, setPreviewArticle] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -43,7 +44,7 @@ export const AdminDashboard = () => {
     setLoading(true);
     try {
       if (activeTab === 'categories') {
-        const res = await axios.get(`${API_URL}/categories`);
+        const res = await axios.get(`${API_URL}/categories?t=${Date.now()}`);
         setData(res.data.categories || []);
       } else {
         const res = await axios.get(`${API_URL}/admin?type=${activeTab}`, {
@@ -81,15 +82,14 @@ export const AdminDashboard = () => {
   };
 
   const handleDeleteCategory = async (id) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      try {
-        await axios.delete(`${API_URL}/categories/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        fetchData();
-      } catch (err) {
-        alert(err.response?.data?.error || 'Error deleting category');
-      }
+    try {
+      await axios.delete(`${API_URL}/categories/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDeleteConfirmId(null);
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Error deleting category');
     }
   };
 
@@ -112,12 +112,11 @@ export const AdminDashboard = () => {
 
   const handleDeleteArticle = async (id) => {
     try {
-      if (confirm('Are you sure you want to delete this article?')) {
-        await axios.delete(`${API_URL}/admin/articles/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        fetchData();
-      }
+      await axios.delete(`${API_URL}/admin/articles/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDeleteConfirmId(null);
+      fetchData();
     } catch (err) {
       alert('Error deleting article');
     }
@@ -147,12 +146,11 @@ export const AdminDashboard = () => {
 
   const handleDeleteUser = async (id) => {
     try {
-      if (confirm('Are you sure you want to delete this user?')) {
-        await axios.delete(`${API_URL}/admin/users/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        fetchData();
-      }
+      await axios.delete(`${API_URL}/admin/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDeleteConfirmId(null);
+      fetchData();
     } catch (err) {
       alert('Error deleting user');
     }
@@ -266,8 +264,11 @@ export const AdminDashboard = () => {
               </div>
             </div>
           ) : loading ? (
-            <div className="flex justify-center p-12 text-indigo-600">
-              <Loader className="w-8 h-8 animate-spin" />
+            <div className="space-y-4 animate-pulse">
+              <div className="w-full h-12 bg-slate-100 dark:bg-[#252525] rounded-lg"></div>
+              <div className="w-full h-16 bg-slate-50 dark:bg-[#1a1a1a] rounded-lg"></div>
+              <div className="w-full h-16 bg-slate-50 dark:bg-[#1a1a1a] rounded-lg"></div>
+              <div className="w-full h-16 bg-slate-50 dark:bg-[#1a1a1a] rounded-lg"></div>
             </div>
           ) : data.length === 0 && activeTab !== 'categories' ? (
             <p className="text-slate-500 text-center py-12">No {activeTab} found.</p>
@@ -352,9 +353,17 @@ export const AdminDashboard = () => {
                         </button>
                       )}
                       {activeTab === 'articles' && (
-                        <button onClick={() => { handleDeleteArticle(item._id); setPreviewArticle(null); }} className="text-red-600 hover:text-red-700 p-1 bg-red-50 dark:bg-red-900/30 dark:text-red-400 rounded transition" title="Delete">
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                        deleteConfirmId === item._id ? (
+                          <div className="inline-flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
+                            <span className="text-xs text-red-600 dark:text-red-400 font-medium">Delete?</span>
+                            <button onClick={() => { handleDeleteArticle(item._id); setPreviewArticle(null); }} className="text-white text-xs font-bold px-2 py-1 bg-red-600 hover:bg-red-700 rounded transition">Yes</button>
+                            <button onClick={() => setDeleteConfirmId(null)} className="text-slate-600 dark:text-slate-300 text-xs font-bold px-2 py-1 bg-white dark:bg-[#333] hover:bg-slate-100 dark:hover:bg-[#444] rounded transition shadow-sm">No</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => setDeleteConfirmId(item._id)} className="text-red-600 hover:text-red-700 p-1 bg-red-50 dark:bg-red-900/30 dark:text-red-400 rounded transition" title="Delete">
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )
                       )}
                       {activeTab === 'users' && !item.isAdmin && (
                         <button onClick={() => handlePromoteUser(item._id)} className="text-indigo-600 hover:text-indigo-700 text-xs font-bold px-2 py-1 bg-indigo-50 rounded border border-indigo-200">
@@ -367,14 +376,30 @@ export const AdminDashboard = () => {
                         </button>
                       )}
                       {(activeTab === 'users' || activeTab === 'admins') && !item.isSuperAdmin && (
-                        <button onClick={() => handleDeleteUser(item._id)} className="text-red-600 hover:text-red-700 p-1 bg-red-50 rounded" title="Delete User">
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                        deleteConfirmId === item._id ? (
+                          <div className="inline-flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
+                            <span className="text-xs text-red-600 dark:text-red-400 font-medium">Delete?</span>
+                            <button onClick={() => handleDeleteUser(item._id)} className="text-white text-xs font-bold px-2 py-1 bg-red-600 hover:bg-red-700 rounded transition">Yes</button>
+                            <button onClick={() => setDeleteConfirmId(null)} className="text-slate-600 dark:text-slate-300 text-xs font-bold px-2 py-1 bg-white dark:bg-[#333] hover:bg-slate-100 dark:hover:bg-[#444] rounded transition shadow-sm">No</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => setDeleteConfirmId(item._id)} className="text-red-600 hover:text-red-700 p-1 bg-red-50 rounded" title="Delete User">
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )
                       )}
                       {activeTab === 'categories' && (
-                        <button onClick={() => handleDeleteCategory(item._id || item.id)} className="text-red-600 hover:text-red-700 p-1 bg-red-50 rounded" title="Delete Category">
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                        deleteConfirmId === (item._id || item.id) ? (
+                          <div className="inline-flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
+                            <span className="text-xs text-red-600 dark:text-red-400 font-medium">Delete?</span>
+                            <button onClick={() => handleDeleteCategory(item._id || item.id)} className="text-white text-xs font-bold px-2 py-1 bg-red-600 hover:bg-red-700 rounded transition">Yes</button>
+                            <button onClick={() => setDeleteConfirmId(null)} className="text-slate-600 dark:text-slate-300 text-xs font-bold px-2 py-1 bg-white dark:bg-[#333] hover:bg-slate-100 dark:hover:bg-[#444] rounded transition shadow-sm">No</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => setDeleteConfirmId(item._id || item.id)} className="text-red-600 hover:text-red-700 p-1 bg-red-50 dark:bg-red-900/30 dark:text-red-400 rounded transition" title="Delete Category">
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )
                       )}
                     </td>
                   </tr>

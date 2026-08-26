@@ -40,7 +40,7 @@ export const CreateArticle = ({ isOpen, onClose }) => {
     if (isOpen) {
       const fetchCategories = async () => {
         try {
-          const res = await fetch(`${API_URL}/categories`);
+          const res = await fetch(`${API_URL}/categories?t=${Date.now()}`);
           const data = await res.json();
           if (data.success && data.categories) {
             setCategories(data.categories);
