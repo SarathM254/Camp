@@ -11,10 +11,10 @@ router.get('/', async (req, res) => {
     const count = await Category.countDocuments();
     if (count === 0) {
       const defaultCategories = [
-        { name: 'Campus', order: 1 },
-        { name: 'Sports', order: 2 },
-        { name: 'Events', order: 3 },
-        { name: 'Opinion', order: 4 }
+        { name: 'Campus', slug: 'campus', order: 1 },
+        { name: 'Sports', slug: 'sports', order: 2 },
+        { name: 'Events', slug: 'events', order: 3 },
+        { name: 'Opinion', slug: 'opinion', order: 4 }
       ];
       await Category.insertMany(defaultCategories);
     }
@@ -56,7 +56,7 @@ router.post('/', protect, superAdmin, async (req, res) => {
     res.status(201).json({ success: true, category });
   } catch (error) {
     console.error('Error creating category:', error);
-    res.status(500).json({ success: false, error: 'Server error' });
+    res.status(500).json({ success: false, error: error.message || 'Server error', stack: error.stack });
   }
 });
 
