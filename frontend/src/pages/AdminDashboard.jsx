@@ -42,20 +42,54 @@ export const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/admin?type=${activeTab}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      console.log(`Admin ${activeTab} data:`, res.data);
-      if (activeTab === 'dashboard') setStats(res.data.stats || stats);
-      else if (activeTab === 'users') setData(res.data.users || []);
-      else if (activeTab === 'admins') setData(res.data.admins || []);
-      else if (activeTab === 'articles') setData(res.data.articles || []);
-      else if (activeTab === 'polls') setData(res.data.polls || []);
+      if (activeTab === 'categories') {
+        const res = await axios.get(`${API_URL}/categories`);
+        setData(res.data.categories || []);
+      } else {
+        const res = await axios.get(`${API_URL}/admin?type=${activeTab}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        console.log(`Admin ${activeTab} data:`, res.data);
+        if (activeTab === 'dashboard') setStats(res.data.stats || stats);
+        else if (activeTab === 'users') setData(res.data.users || []);
+        else if (activeTab === 'admins') setData(res.data.admins || []);
+        else if (activeTab === 'articles') setData(res.data.articles || []);
+        else if (activeTab === 'polls') setData(res.data.polls || []);
+      }
     } catch (err) {
       console.error('Error fetching admin data:', err);
       setData([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
+    try {
+      await axios.post(`${API_URL}/categories`, { name: newCategoryName }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNewCategoryName('');
+      fetchData();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Error adding category');
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (confirm('Are you sure you want to delete this category?')) {
+      try {
+        await axios.delete(`${API_URL}/categories/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        fetchData();
+      } catch (err) {
+        alert(err.response?.data?.error || 'Error deleting category');
+      }
     }
   };
 
@@ -165,6 +199,14 @@ export const AdminDashboard = () => {
             >
               <ShieldAlert className="w-5 h-5" /> Admins
             </button>
+            <button
+              onClick={() => setActiveTab('categories')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
+                activeTab === 'categories' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-600 hover:bg-white hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-[#1f1f1f]'
+              }`}
+            >
+              <FileText className="w-5 h-5" /> Categories
+            </button>
           </>
         )}
       </aside>
@@ -227,18 +269,37 @@ export const AdminDashboard = () => {
             <div className="flex justify-center p-12 text-indigo-600">
               <Loader className="w-8 h-8 animate-spin" />
             </div>
-          ) : data.length === 0 ? (
+          ) : data.length === 0 && activeTab !== 'categories' ? (
             <p className="text-slate-500 text-center py-12">No {activeTab} found.</p>
           ) : (
-            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-              <thead className="bg-slate-50 dark:bg-[#252525] text-slate-700 dark:text-slate-400 uppercase text-xs">
-                <tr>
-                  <th className="px-4 py-3 rounded-tl-lg">Info</th>
-                  <th className="px-4 py-3">Status/Role</th>
-                  <th className="px-4 py-3 text-right rounded-tr-lg">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-[#333]">
+            <div className="space-y-6">
+              {activeTab === 'categories' && (
+                <form onSubmit={handleAddCategory} className="flex gap-4 p-4 bg-slate-50 dark:bg-[#252525] rounded-xl border border-slate-200 dark:border-[#333]">
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="New Category Name (e.g. Technology)"
+                    className="flex-1 px-4 py-2 rounded-lg border border-slate-300 dark:border-[#444] bg-white dark:bg-[#1a1a1a] text-slate-800 dark:text-white outline-none focus:border-indigo-500"
+                    required
+                  />
+                  <button type="submit" className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition">
+                    Add Category
+                  </button>
+                </form>
+              )}
+              {data.length === 0 && activeTab === 'categories' ? (
+                <p className="text-slate-500 text-center py-12">No categories found.</p>
+              ) : (
+                <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                  <thead className="bg-slate-50 dark:bg-[#252525] text-slate-700 dark:text-slate-400 uppercase text-xs">
+                    <tr>
+                      <th className="px-4 py-3 rounded-tl-lg">Info</th>
+                      <th className="px-4 py-3">Status/Role</th>
+                      <th className="px-4 py-3 text-right rounded-tr-lg">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-[#333]">
                 {data.map((item) => (
                   <tr key={item._id} className="hover:bg-slate-50/50 dark:hover:bg-[#252525]/50 transition">
                     <td className="px-4 py-4">
@@ -246,6 +307,11 @@ export const AdminDashboard = () => {
                         <>
                           <div className="font-bold text-slate-800 dark:text-white">{item.title}</div>
                           <div className="text-xs text-slate-500">By {item.author_name}</div>
+                        </>
+                      ) : activeTab === 'categories' ? (
+                        <>
+                          <div className="font-bold text-slate-800 dark:text-white">{item.name}</div>
+                          <div className="text-xs text-slate-500">Slug: {item.slug}</div>
                         </>
                       ) : (
                         <>
@@ -261,6 +327,10 @@ export const AdminDashboard = () => {
                           item.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
                         }`}>
                           {item.status || 'pending'}
+                        </span>
+                      ) : activeTab === 'categories' ? (
+                        <span className={`px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700 dark:bg-[#333] dark:text-slate-300`}>
+                          Order: {item.order}
                         </span>
                       ) : (
                         <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
@@ -297,7 +367,12 @@ export const AdminDashboard = () => {
                         </button>
                       )}
                       {(activeTab === 'users' || activeTab === 'admins') && !item.isSuperAdmin && (
-                        <button onClick={() => handleDeleteUser(item._id)} className="text-red-600 hover:text-red-700 p-1 bg-red-50 rounded" title="Delete">
+                        <button onClick={() => handleDeleteUser(item._id)} className="text-red-600 hover:text-red-700 p-1 bg-red-50 rounded" title="Delete User">
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
+                      {activeTab === 'categories' && (
+                        <button onClick={() => handleDeleteCategory(item._id || item.id)} className="text-red-600 hover:text-red-700 p-1 bg-red-50 rounded" title="Delete Category">
                           <Trash2 className="w-5 h-5" />
                         </button>
                       )}
@@ -307,6 +382,8 @@ export const AdminDashboard = () => {
               </tbody>
             </table>
           )}
+        </div>
+      )}
         </div>
       </main>
 

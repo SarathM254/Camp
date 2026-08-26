@@ -27,11 +27,39 @@ export const CreateArticle = ({ isOpen, onClose }) => {
   const quillRef = useRef(null);
   const quillInstance = useRef(null);
 
+  const [categories, setCategories] = useState([]);
+  const [catsLoading, setCatsLoading] = useState(true);
+
   useEffect(() => {
     if (user?.isCollegeVerified || user?.isSuperAdmin || user?.isAdmin) {
       setIsVerified(true);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchCategories = async () => {
+        try {
+          const res = await fetch(`${API_URL}/categories`);
+          const data = await res.json();
+          if (data.success && data.categories) {
+            setCategories(data.categories);
+            if (data.categories.length > 0) {
+              setCategory(data.categories[0].name);
+            }
+          }
+        } catch (err) {
+          console.error('Error loading categories:', err);
+          const fallback = [{ name: 'Campus' }, { name: 'Sports' }, { name: 'Events' }, { name: 'Opinion' }];
+          setCategories(fallback);
+          setCategory('Campus');
+        } finally {
+          setCatsLoading(false);
+        }
+      };
+      fetchCategories();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && !isVerified && !showVerification) {
@@ -74,7 +102,6 @@ export const CreateArticle = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (!isOpen) {
       setTitle('');
-      setCategory('Campus');
       setImageFile(null);
       setImagePreviewUrl(null);
       setIsPreviewMode(false);
@@ -291,19 +318,25 @@ export const CreateArticle = ({ isOpen, onClose }) => {
 
                 {/* Category Pills */}
                 <div className="flex flex-wrap gap-2">
-                  {['Campus', 'Sports', 'Events', 'Opinion'].map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => setCategory(cat)}
-                      className={`px-5 py-1.5 rounded-full text-sm font-medium transition ${
-                        category === cat
-                          ? 'bg-[#6366f1] text-white border-transparent'
-                          : 'bg-white dark:bg-[#1a1a1a] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#444] hover:border-slate-300 dark:hover:border-slate-600'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+                  {catsLoading ? (
+                    [...Array(4)].map((_, i) => (
+                      <div key={i} className="px-5 py-1.5 rounded-full w-20 h-8 bg-slate-200 dark:bg-[#252525] animate-pulse" />
+                    ))
+                  ) : (
+                    categories.map(cat => (
+                      <button
+                        key={cat.name}
+                        onClick={() => setCategory(cat.name)}
+                        className={`px-5 py-1.5 rounded-full text-sm font-medium transition ${
+                          category === cat.name
+                            ? 'bg-[#6366f1] text-white border-transparent'
+                            : 'bg-white dark:bg-[#1a1a1a] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#444] hover:border-slate-300 dark:hover:border-slate-600'
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))
+                  )}
                 </div>
 
                 {/* Title */}

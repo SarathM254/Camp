@@ -5,6 +5,7 @@ import articleRoutes from './articleRoutes.js';
 import adminRoutes from './adminRoutes.js';
 import verificationRoutes from './verificationRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
+import categoryRoutes from './categoryRoutes.js';
 
 const router = express.Router();
 
@@ -19,5 +20,6 @@ router.use('/articles', articleRoutes);
 router.use('/admin', adminRoutes);
 router.use('/verify', verificationRoutes);
 router.use('/upload', uploadRoutes);
+router.use('/categories', categoryRoutes);
 
 export default router;

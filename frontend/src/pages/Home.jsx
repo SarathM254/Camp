@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import ArticleCard from '../components/features/ArticleCard';
 import ArticleCardSkeleton from '../components/features/ArticleCardSkeleton';
 
-const CATEGORIES = ['All', 'Campus', 'Sports', 'Events', 'Opinion'];
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export const Home = () => {
@@ -14,6 +13,25 @@ export const Home = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [catsLoading, setCatsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/categories`);
+        if (res.data && res.data.categories) {
+          setCategories([{ name: 'All' }, ...res.data.categories]);
+        }
+      } catch (err) {
+        console.error('Error loading categories:', err);
+        setCategories([{ name: 'All' }, { name: 'Campus' }, { name: 'Sports' }, { name: 'Events' }, { name: 'Opinion' }]);
+      } finally {
+        setCatsLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -51,19 +69,25 @@ export const Home = () => {
       {/* Category Navigation Bar - Full Width Background */}
       <div className="sticky top-16 z-40 w-full bg-slate-50 dark:bg-[#0a0a0a] border-b border-slate-200 dark:border-[#222] shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-none pt-4 pb-3 px-4 sm:px-6 lg:px-8">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition whitespace-nowrap ${
-                selectedCategory === cat
-                  ? 'bg-[#4f56c7] text-white shadow-sm'
-                  : 'bg-white dark:bg-[#1a1a1a] text-slate-600 dark:text-[#a0a0a0] hover:bg-slate-100 dark:hover:bg-[#252525] border border-slate-200 dark:border-[#333]'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {catsLoading ? (
+            [...Array(6)].map((_, i) => (
+              <div key={i} className="px-4 py-2 rounded-full w-24 h-9 bg-slate-200 dark:bg-[#252525] animate-pulse shrink-0" />
+            ))
+          ) : (
+            categories.map((cat) => (
+              <button
+                key={cat.name}
+                onClick={() => setSelectedCategory(cat.name)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition whitespace-nowrap ${
+                  selectedCategory === cat.name
+                    ? 'bg-[#4f56c7] text-white shadow-sm'
+                    : 'bg-white dark:bg-[#1a1a1a] text-slate-600 dark:text-[#a0a0a0] hover:bg-slate-100 dark:hover:bg-[#252525] border border-slate-200 dark:border-[#333]'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))
+          )}
         </div>
       </div>
 
