@@ -13,7 +13,6 @@ const articleSchema = new mongoose.Schema(
     },
     tag: {
       type: String,
-      enum: ['Campus', 'Sports', 'Events', 'Opinion', 'General'],
       default: 'Campus',
     },
     image_path: {

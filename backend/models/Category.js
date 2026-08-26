@@ -24,12 +24,11 @@ const categorySchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Pre-save hook to generate slug if it doesn't exist
-categorySchema.pre('validate', function(next) {
+// Pre-validate hook to generate slug if it doesn't exist
+categorySchema.pre('validate', function() {
   if (this.name && !this.slug) {
     this.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   }
-  next();
 });
 
 const Category = mongoose.models.Category || mongoose.model('Category', categorySchema);

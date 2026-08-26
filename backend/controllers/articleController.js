@@ -8,7 +8,7 @@ export const getArticles = async (req, res) => {
     return res.json({ success: true, articles });
   } catch (error) {
     console.error('Error fetching articles:', error);
-    return res.status(500).json({ success: false, error: 'Server error fetching articles' });
+    return res.status(500).json({ success: false, error: error.message || 'Server error fetching articles', stack: error.stack });
   }
 };
 
