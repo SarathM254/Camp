@@ -7,18 +7,6 @@ const router = express.Router();
 // GET /api/categories - Public route to fetch all categories
 router.get('/', async (req, res) => {
   try {
-    // Auto-seed default categories if empty
-    const count = await Category.countDocuments();
-    if (count === 0) {
-      const defaultCategories = [
-        { name: 'Campus', slug: 'campus', order: 1 },
-        { name: 'Sports', slug: 'sports', order: 2 },
-        { name: 'Events', slug: 'events', order: 3 },
-        { name: 'Opinion', slug: 'opinion', order: 4 }
-      ];
-      await Category.insertMany(defaultCategories);
-    }
-
     const categories = await Category.find({ isActive: true }).sort({ order: 1 });
     
     // Add edge caching headers
