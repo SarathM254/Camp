@@ -70,6 +70,32 @@ export const CreateArticle = ({ isOpen, onClose }) => {
     }
   }, [isOpen, isVerified]);
 
+  // Clean state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setTitle('');
+      setCategory('Campus');
+      setImageFile(null);
+      setImagePreviewUrl(null);
+      setIsPreviewMode(false);
+      setError('');
+      quillInstance.current = null;
+    }
+  }, [isOpen]);
+
+  const handleCloseRequest = () => {
+    const hasText = quillInstance.current && quillInstance.current.getText().trim().length > 0;
+    const hasContent = title.trim().length > 0 || hasText || imageFile !== null;
+    
+    if (hasContent && !success) {
+      if (window.confirm('You have unsaved changes. Are you sure you want to discard this article?')) {
+        onClose();
+      }
+    } else {
+      onClose();
+    }
+  };
+
   const handleImageAdjusted = (result) => {
     setImageFile(result.file);
     setImagePreviewUrl(result.dataUrl);
@@ -184,12 +210,12 @@ export const CreateArticle = ({ isOpen, onClose }) => {
                   Back to Edit
                 </button>
               ) : (
-                <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition">
+                <button onClick={handleCloseRequest} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition">
                   <X className="w-5 h-5 stroke-[2.5]" />
                 </button>
               )}
               <span className="text-sm italic font-medium text-slate-400 dark:text-slate-500">
-                {isPreviewMode ? 'Preview Mode' : 'Draft loaded'}
+                {isPreviewMode ? 'Preview Mode' : 'New Article'}
               </span>
             </div>
             {isPreviewMode ? (
