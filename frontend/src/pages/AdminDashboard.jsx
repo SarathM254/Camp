@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Newspaper, Users, ShieldAlert, FileText, CheckCircle, Trash2, Shield, Loader, Eye, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -20,6 +21,7 @@ export const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [previewArticle, setPreviewArticle] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [aiEnabled, setAiEnabled] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -50,8 +52,14 @@ export const AdminDashboard = () => {
         const res = await axios.get(`${API_URL}/admin?type=${activeTab}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        console.log(`Admin ${activeTab} data:`, res.data);
-        if (activeTab === 'dashboard') setStats(res.data.stats || stats);
+        if (activeTab === 'dashboard') {
+          setStats(res.data.stats || stats);
+          // Fetch settings when dashboard loads
+          const settingsRes = await axios.get(`${API_URL}/settings`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setAiEnabled(settingsRes.data.settings?.isAiApprovalEnabled || false);
+        }
         else if (activeTab === 'users') setData(res.data.users || []);
         else if (activeTab === 'admins') setData(res.data.admins || []);
         else if (activeTab === 'articles') setData(res.data.articles || []);
@@ -77,7 +85,7 @@ export const AdminDashboard = () => {
       setNewCategoryName('');
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error adding category');
+      toast.error(err.response?.data?.error || 'Error adding category');
     }
   };
 
@@ -89,7 +97,7 @@ export const AdminDashboard = () => {
       setDeleteConfirmId(null);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.error || 'Error deleting category');
+      toast.error(err.response?.data?.error || 'Error deleting category');
     }
   };
 
@@ -106,7 +114,7 @@ export const AdminDashboard = () => {
       });
       fetchData();
     } catch (err) {
-      alert('Error approving article');
+      toast.error('Error approving article');
     }
   };
 
@@ -118,7 +126,7 @@ export const AdminDashboard = () => {
       setDeleteConfirmId(null);
       fetchData();
     } catch (err) {
-      alert('Error deleting article');
+      toast.error('Error deleting article');
     }
   };
 
@@ -129,7 +137,7 @@ export const AdminDashboard = () => {
       });
       fetchData();
     } catch (err) {
-      alert('Error promoting user');
+      toast.error('Error promoting user');
     }
   };
 
@@ -140,7 +148,7 @@ export const AdminDashboard = () => {
       });
       fetchData();
     } catch (err) {
-      alert('Error demoting admin');
+      toast.error('Error demoting admin');
     }
   };
 
@@ -152,7 +160,20 @@ export const AdminDashboard = () => {
       setDeleteConfirmId(null);
       fetchData();
     } catch (err) {
-      alert('Error deleting user');
+      toast.error('Error deleting user');
+    }
+  };
+
+  const handleToggleAi = async () => {
+    try {
+      const newStatus = !aiEnabled;
+      setAiEnabled(newStatus); // Optimistic UI update
+      await axios.put(`${API_URL}/settings/ai-toggle`, { isAiApprovalEnabled: newStatus }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (err) {
+      toast.error('Error updating AI settings');
+      setAiEnabled(!aiEnabled); // Revert on error
     }
   };
 
@@ -218,7 +239,8 @@ export const AdminDashboard = () => {
         </div>
         <div className="p-6 overflow-x-auto">
           {activeTab === 'dashboard' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Total Articles */}
               <div className="bg-white dark:bg-[#252525] p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-[#333] flex items-center gap-4 transition hover:shadow-md">
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center text-white bg-gradient-to-br from-[#667eea] to-[#764ba2]">
@@ -262,6 +284,26 @@ export const AdminDashboard = () => {
                   <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Approved Articles</p>
                 </div>
               </div>
+            </div>
+
+            {/* AI Settings Section */}
+            {user.isSuperAdmin && (
+              <div className="bg-white dark:bg-[#252525] p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-[#333]">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">AI Moderation Settings</h3>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-slate-50 dark:bg-[#1a1a1a] rounded-xl border border-slate-200 dark:border-[#444]">
+                  <div>
+                    <h4 className="font-semibold text-slate-800 dark:text-white">Auto-Approve Articles with AI</h4>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Use Gemini (Images) and Groq (Text) to automatically moderate and approve new articles upon submission.</p>
+                  </div>
+                  <button 
+                    onClick={handleToggleAi}
+                    className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors ${aiEnabled ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-[#444]'}`}
+                  >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${aiEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+              </div>
+            )}
             </div>
           ) : loading ? (
             <div className="space-y-4 animate-pulse">

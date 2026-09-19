@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Check, Image as ImageIcon } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { CollegeVerificationModal } from './CollegeVerificationModal';
 import { ImageEditor } from './ImageEditor';
@@ -18,9 +19,10 @@ export const CreateArticle = ({ isOpen, onClose }) => {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Campus');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState('idle'); // 'idle' | 'submitting' | 'approved' | 'pending' | 'rejected'
+  const [rejectReason, setRejectReason] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
@@ -114,7 +116,7 @@ export const CreateArticle = ({ isOpen, onClose }) => {
     const hasText = quillInstance.current && quillInstance.current.getText().trim().length > 0;
     const hasContent = title.trim().length > 0 || hasText || imageFile !== null;
     
-    if (hasContent && !success) {
+    if (hasContent && submitStatus === 'idle') {
       if (window.confirm('You have unsaved changes. Are you sure you want to discard this article?')) {
         onClose();
       }
@@ -150,6 +152,7 @@ export const CreateArticle = ({ isOpen, onClose }) => {
     const body = quillInstance.current.root.innerHTML;
 
     setIsSubmitting(true);
+    setSubmitStatus('submitting');
     setError('');
 
     try {
@@ -189,23 +192,32 @@ export const CreateArticle = ({ isOpen, onClose }) => {
 
       const data = await res.json();
       if (data.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          onClose();
-          setSuccess(false);
-          setTitle('');
-          setImageFile(null);
-          setImagePreviewUrl(null);
-          setIsPreviewMode(false);
-          if (quillInstance.current) {
-            quillInstance.current.root.innerHTML = '';
-          }
-        }, 2000);
+        if (data.status === 'approved') {
+          toast.success('Approved & Published!');
+        } else {
+          toast.success('Submission Received! Pending admin approval.');
+        }
+        onClose();
+        setSubmitStatus('idle');
+        setTitle('');
+        setImageFile(null);
+        setImagePreviewUrl(null);
+        setIsPreviewMode(false);
+        if (quillInstance.current) {
+          quillInstance.current.root.innerHTML = '';
+        }
       } else {
-        setError(data.error || 'Failed to submit article');
+        if (res.status === 403 && data.reason) {
+          setSubmitStatus('rejected');
+          setRejectReason(data.reason);
+        } else {
+          setError(data.error || 'Failed to submit article');
+          setSubmitStatus('idle');
+        }
       }
     } catch (err) {
       setError(err.message || 'Server error');
+      setSubmitStatus('idle');
     } finally {
       setIsSubmitting(false);
     }
@@ -248,10 +260,10 @@ export const CreateArticle = ({ isOpen, onClose }) => {
             {isPreviewMode ? (
               <button
                 onClick={handlePublish}
-                disabled={isSubmitting}
+                disabled={isSubmitting || submitStatus !== 'idle'}
                 className="bg-[#6366f1] hover:bg-indigo-600 disabled:opacity-50 text-white px-6 py-2 rounded-full font-semibold transition shadow-sm"
               >
-                {isSubmitting ? 'Publishing...' : 'Submit for Review'}
+                {submitStatus === 'submitting' ? 'AI is analyzing...' : 'Submit for Review'}
               </button>
             ) : (
               <button
@@ -271,19 +283,47 @@ export const CreateArticle = ({ isOpen, onClose }) => {
               </div>
             )}
             
-            {success && (
+            {submitStatus === 'approved' && (
               <div className="bg-green-50 text-green-700 p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-3">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                   <Check className="w-8 h-8 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">Submission Received!</h3>
-                  <p className="text-green-600/80">Your article is being processed and is pending admin approval.</p>
+                  <h3 className="text-xl font-bold">Approved & Published!</h3>
+                  <p className="text-green-600/80">AI has verified your content and published it instantly.</p>
                 </div>
               </div>
             )}
 
-            {!success && isPreviewMode && (
+            {submitStatus === 'pending' && (
+              <div className="bg-amber-50 text-amber-700 p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-3">
+                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center">
+                  <Check className="w-8 h-8 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Submission Received!</h3>
+                  <p className="text-amber-600/80">Thank you for submitting. Your article is pending manual admin approval.</p>
+                </div>
+              </div>
+            )}
+
+            {submitStatus === 'rejected' && (
+              <div className="bg-red-50 text-red-700 p-6 rounded-2xl flex flex-col items-center justify-center text-center space-y-3">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                  <X className="w-8 h-8 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Submission Rejected</h3>
+                  <p className="text-red-600/80 mt-1">Our AI moderator flagged this content:</p>
+                  <p className="font-semibold text-red-700 mt-2 bg-white/50 px-4 py-2 rounded-lg inline-block border border-red-200">"{rejectReason}"</p>
+                </div>
+                <button onClick={() => setSubmitStatus('idle')} className="mt-4 px-6 py-2 bg-red-600 text-white rounded-full font-semibold hover:bg-red-700 transition">
+                  Edit and Resubmit
+                </button>
+              </div>
+            )}
+
+            {submitStatus === 'idle' && isPreviewMode && (
               <div className="space-y-6">
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 text-sm font-semibold rounded-full uppercase tracking-wider">
@@ -309,7 +349,7 @@ export const CreateArticle = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {!success && !isPreviewMode && (
+            {submitStatus === 'idle' && !isPreviewMode && (
               <>
                 {/* Image Editor */}
                 <div>

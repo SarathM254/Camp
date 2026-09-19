@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { Toaster } from 'react-hot-toast';
 import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 
@@ -19,7 +20,9 @@ const PageLoader = () => (
 
 export function App() {
   return (
-    <ThemeProvider>
+    <>
+      <Toaster position="bottom-right" />
+      <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
           <Suspense fallback={<PageLoader />}>
@@ -35,6 +38,7 @@ export function App() {
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
+    </>
   );
 }
 

@@ -25,6 +25,7 @@ export const BottomNav = ({ onAddClick }) => {
         {/* Add Article */}
         <button
           onClick={onAddClick}
+          aria-label="Add Article"
           className="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-500 hover:text-indigo-600 dark:text-slate-400 transition group"
         >
           <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-md group-hover:bg-indigo-700 transition-colors">

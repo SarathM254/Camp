@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Edit, Shield, LogOut, Check, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AVATAR_SEEDS = [
   'Adrian', 'Vivian', 'Wyatt', 'Luis', 'Jack',
@@ -27,7 +28,7 @@ export const Profile = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6A70D6]"></div>
+        <div className="w-8 h-8 border-4 border-[#4f56c7] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -52,8 +53,9 @@ export const Profile = () => {
     const res = await updateProfile(editName, selectedAvatar);
     if (res.success) {
       setIsEditMode(false);
+      toast.success('Profile updated successfully');
     } else {
-      alert(res.error || 'Failed to update profile');
+      toast.error(res.error || 'Failed to update profile');
     }
     setIsSaving(false);
   };
