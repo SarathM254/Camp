@@ -26,11 +26,14 @@ export default defineConfig({
           },
           {
             src: 'campuz.png',
-            sizes: '512x512',
+            sizes: '192x192 512x512',
             type: 'image/png',
             purpose: 'any maskable'
           }
         ]
+      },
+      devOptions: {
+        enabled: true
       }
     })
   ],
